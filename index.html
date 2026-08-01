@@ -137,8 +137,39 @@
     position:absolute; inset:0; pointer-events:none; opacity:0;
     box-shadow: inset 0 0 24px 4px rgba(240,201,74,0.55);
     transition: opacity .4s ease;
+    z-index:3;
   }
   .reel.landed .glow{opacity:1;}
+
+  .reel .full-media{
+    position:absolute; inset:0; z-index:2;
+    opacity:0; transition: opacity .35s ease;
+    pointer-events:none;
+  }
+  .reel.landed .full-media{opacity:1; pointer-events:auto;}
+  .reel .full-media .backdrop{
+    position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    filter: blur(20px) brightness(0.5) saturate(1.15);
+    transform: scale(1.2);
+  }
+  .reel .full-media .fg-wrap{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .reel .full-media .fg{
+    max-width:100%; max-height:100%;
+    width:auto; height:auto;
+    object-fit:contain;
+    display:block;
+  }
+  .reel .full-media .kind-badge{
+    position:absolute; top:6px; right:6px;
+    background:rgba(0,0,0,0.6); color:var(--gold-bright);
+    font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:1px;
+    text-transform:uppercase; padding:2px 6px; border-radius:4px;
+    pointer-events:none;
+  }
 
   .reel .meta{
     position:absolute; left:0; right:0; bottom:0;
@@ -150,6 +181,7 @@
     opacity:0; transform: translateY(6px);
     transition: opacity .3s ease .1s, transform .3s ease .1s;
     pointer-events:none;
+    z-index:4;
   }
   .reel.landed .meta{opacity:1; transform:translateY(0); pointer-events:auto;}
   .reel .meta a{color:var(--gold-bright); text-decoration:none;}
@@ -273,6 +305,86 @@
     font-family:'JetBrains Mono', monospace; font-size:11px; color:#584a6c;
   }
   footer a{color:var(--muted);}
+
+  /* ---------- Favorites & Collector Cards ---------- */
+  .favorite-btn {
+    position: absolute; top: 6px; left: 6px;
+    background: rgba(0,0,0,0.6); color: var(--muted);
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 4px 8px; cursor: pointer; z-index: 10;
+    font-family: 'JetBrains Mono', monospace; font-size: 14px;
+    transition: all 0.2s;
+  }
+  .favorite-btn:hover { color: var(--gold-bright); border-color: var(--gold); }
+  .favorite-btn.active { color: var(--gold-bright); background: rgba(212,167,44,0.2); }
+
+  /* Modal Base */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: none; justify-content: center; align-items: center;
+    z-index: 100; padding: 20px; backdrop-filter: blur(5px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-content {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 24px; max-width: 800px;
+    width: 100%; max-height: 90vh; overflow-y: auto; position: relative;
+  }
+  .close-modal {
+    position: absolute; top: 16px; right: 16px;
+    background: transparent; border: none; color: var(--muted);
+    font-size: 24px; cursor: pointer;
+  }
+
+  /* Flip Cards Grid */
+  .collection-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px;
+    margin-top: 20px;
+  }
+  .collection-card-wrap {
+    position: relative;
+  }
+  .collection-unfav-btn {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.7); color: var(--gold-bright);
+    border: 1px solid var(--line); border-radius: 4px;
+    width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 15; font-size: 14px;
+    transition: background 0.2s, transform 0.2s;
+  }
+  .collection-unfav-btn:hover { background: rgba(255,77,141,0.3); color: var(--magenta); transform: scale(1.1); }
+
+  .flip-card {
+    background-color: transparent; width: 100%; aspect-ratio: 3/4;
+    perspective: 1000px; cursor: pointer;
+  }
+  .flip-card-inner {
+    position: relative; width: 100%; height: 100%; text-align: center;
+    transition: transform 0.6s; transform-style: preserve-3d;
+  }
+  .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+  .flip-card-front, .flip-card-back {
+    position: absolute; width: 100%; height: 100%;
+    backface-visibility: hidden; border-radius: 10px;
+    border: 2px solid var(--card-color, var(--line));
+    background-size: cover; background-position: center;
+  }
+  .flip-card-back {
+    background-color: var(--panel-2); color: var(--cream);
+    transform: rotateY(180deg); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 12px;
+    border: 2px solid var(--card-color, var(--line));
+  }
+  .flip-card-back .score { font-size: 20px; font-weight: bold; color: var(--magenta); }
+  .flip-card-back .rarity-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 8px; color: var(--card-color); text-transform: uppercase;}
+
+  /* Full Image View inside Modal */
+  .full-view-img { max-width: 100%; border-radius: 8px; margin-bottom: 16px; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .tag-badge {
+    background: rgba(255,255,255,0.05); padding: 4px 8px;
+    border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  }
 </style>
 </head>
 <body>
@@ -295,6 +407,7 @@
 
   <div class="actions">
     <button class="lever" id="pullBtn">PULL LEVER</button>
+    <button class="ghost-btn" id="collectionBtn">View Collection</button>
     <button class="ghost-btn" id="resetBtn">Reset defaults</button>
   </div>
   <div class="status-line" id="statusLine">Set your filters below, then pull the lever.</div>
@@ -357,8 +470,29 @@
 
   <footer>
     Pulls a random batch of 10 from e621's public API, client-side, in your browser. No data is stored or sent anywhere else. Content on e621 is user-uploaded and can include adult material — use the rating filter above to control what you see.
+    <p></p>
+    Website made by <a href="https://linkslair.xyz" target="_blank">Link_theFox</a> and used some claude for good api support.
   </footer>
 
+</div>
+
+<!-- Audio Element for Spins (Loops continuously until land) -->
+<audio id="spinSound" src="https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3" loop></audio>
+
+<!-- Modals -->
+<div class="modal-overlay" id="collectionModal">
+  <div class="modal-content">
+    <button class="close-modal" onclick="document.getElementById('collectionModal').classList.remove('open')">×</button>
+    <h2 style="margin-top:0; color:var(--gold-bright);">Your Collection</h2>
+    <div class="collection-grid" id="collectionGrid"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="inspectModal">
+  <div class="modal-content">
+    <button class="close-modal" onclick="document.getElementById('inspectModal').classList.remove('open')">×</button>
+    <div id="inspectContent"></div>
+  </div>
 </div>
 
 <script>
@@ -366,7 +500,7 @@
 const REEL_COUNT = 10;
 const FILLER_FRAMES = 10;        // fake frames shown while a reel "spins"
 let spinCount = 0;
-let lastResultIds = new Set();   // ids shown on the previous spin, to avoid an immediate repeat
+let spinHistory = [];         // queue of Sets of post ids from recent spins, oldest first
 let currentPool = [];            // last fetched pool, reused as filler imagery
 
 const reelsEl = document.getElementById('reels');
@@ -411,12 +545,6 @@ function scoreMode(){
   return el ? el.value : 'range';
 }
 
-// e621 caps how many tags an anonymous/basic search can carry in one query.
-// We budget for that: reserve slots for order/rating/score, then spend
-// whatever's left on the interest-lock tags first (critical for "top scored"
-// mode to actually search *for* the tag instead of filtering after the fact),
-// then on blacklist tags. Anything that doesn't fit still gets enforced
-// client-side in applyBlacklistAndLock as a safety net.
 const TAG_BUDGET = 6;
 
 function buildTagQuery(){
@@ -435,22 +563,15 @@ function buildTagQuery(){
   if (ratings.length > 0 && ratings.length < 3){
     ratings.forEach(r => tags.push(`~rating:${r}`));
     budget -= ratings.length;
-  } // if none checked or all checked, don't restrict by rating
+  }
 
   if (mode === 'range'){
     const min = parseInt(document.getElementById('scoreMin').value, 10) || 0;
     const max = parseInt(document.getElementById('scoreMax').value, 10) || 999999;
-    tags.push(`score:${min}..${max}`); // single-token range syntax
+    tags.push(`score:${min}..${max}`);
     budget -= 1;
   }
 
-  // Only send the interest tags as a search filter if ALL of them fit in the
-  // remaining budget — sending a partial subset would incorrectly exclude
-  // posts that match one of the tags we didn't have room to include.
-  // Note: a *single* tag doesn't get the "~" OR-group prefix — with only one
-  // term, e621 doesn't reliably enforce a lone "~tag" as a hard requirement,
-  // so it's sent as a plain (unambiguous) tag instead. "~" is only used once
-  // there are 2+ tags forming a real OR group.
   let interestSentToApi = false;
   if (lockOn && interestTags.length > 0 && interestTags.length <= budget){
     if (interestTags.length === 1){
@@ -462,8 +583,6 @@ function buildTagQuery(){
     interestSentToApi = true;
   }
 
-  // Blacklist tags are independent AND-conditions, so partial is always
-  // safe — spend whatever budget is left on them.
   for (const bt of blacklist){
     if (budget <= 0) break;
     tags.push(`-${bt}`);
@@ -490,9 +609,6 @@ function allTagsForPost(post){
   ]);
 }
 
-// Enforces the blacklist (hard exclude) and the interest lock (require at
-// least one match) client-side, since these lists can be arbitrarily long
-// and e621's API can't take that many tags in one query.
 function applyBlacklistAndLock(posts, blacklist, lockTags, lockOn){
   return posts.filter(p => {
     const tagSet = allTagsForPost(p);
@@ -506,11 +622,22 @@ function applyBlacklistAndLock(posts, blacklist, lockTags, lockOn){
   });
 }
 
-function weightedSampleWithoutReplacement(posts, interestTags, count, excludeIds){
-  let pool = posts.filter(p => !excludeIds.has(p.id));
-  if (pool.length < count) pool = posts.slice(); // not enough left after exclusion, allow repeats-across-spins this once
+const HISTORY_DEPTH = 4;
 
-  const arr = pool.map(p => {
+function pickEligiblePool(pool, count){
+  for (let depth = spinHistory.length; depth >= 0; depth--){
+    const excl = new Set();
+    for (let i = spinHistory.length - depth; i < spinHistory.length; i++){
+      for (const id of spinHistory[i]) excl.add(id);
+    }
+    const filtered = pool.filter(p => !excl.has(p.id));
+    if (filtered.length >= count) return filtered;
+  }
+  return pool;
+}
+
+function weightedSampleWithoutReplacement(posts, interestTags, count){
+  const arr = posts.map(p => {
     const tagSet = allTagsForPost(p);
     const matches = interestTags.reduce((n,t) => n + (tagSet.has(t) ? 1 : 0), 0);
     return { post: p, weight: 1 + matches * 4 };
@@ -554,6 +681,166 @@ async function fetchPool(){
   return { posts, interestSentToApi };
 }
 
+// ===================== Media helpers =====================
+function mediaKind(post){
+  const ext = ((post.file && post.file.ext) || '').toLowerCase();
+  if (ext === 'webm' || ext === 'mp4') return 'video';
+  if (ext === 'gif') return 'gif';
+  return 'image';
+}
+
+function bestSrc(post, kind){
+  if (kind === 'gif') return post.file.url;
+  if (kind === 'video') return (post.preview && post.preview.url) || post.file.url;
+  return (post.sample && post.sample.url) || post.file.url;
+}
+
+function mountFullMedia(reelEl, post){
+  const kind = mediaKind(post);
+  const src = bestSrc(post, kind);
+  const backdropSrc = (post.preview && post.preview.url) || src;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'full-media';
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'backdrop';
+  backdrop.style.backgroundImage = `url("${backdropSrc}")`;
+
+  const fgWrap = document.createElement('div');
+  fgWrap.className = 'fg-wrap';
+
+  const fg = document.createElement('img');
+  fg.src = src;
+  fg.loading = 'lazy';
+  fg.alt = `e621 post #${post.id}`;
+  fg.className = 'fg';
+  fgWrap.appendChild(fg);
+
+  wrap.appendChild(backdrop);
+  wrap.appendChild(fgWrap);
+
+  if (kind !== 'image'){
+    const badge = document.createElement('div');
+    badge.className = 'kind-badge';
+    badge.textContent = kind;
+    wrap.appendChild(badge);
+  }
+
+  reelEl.appendChild(wrap);
+}
+
+// ===================== Upgraded Rarity & Favorites System =====================
+let favorites = JSON.parse(localStorage.getItem('g621_favorites')) || [];
+
+function calculateRarity(post) {
+  const poolScores = currentPool.map(p => p.score.total).sort((a,b) => a-b);
+  const maxScore = poolScores.length ? poolScores[poolScores.length - 1] : post.score.total;
+  const score = post.score.total;
+  
+  let rarity = 'Common';
+  let color = 'var(--muted)'; // Gray
+  
+  if (score >= maxScore * 0.85) { rarity = 'Legendary'; color = '#FFD700'; } // Top 15%
+  else if (score >= maxScore * 0.60) { rarity = 'Epic'; color = '#FF4D8D'; } // Top 40%
+  else if (score >= maxScore * 0.30) { rarity = 'Rare'; color = '#4D8DFF'; } // Top 70%
+  else if (score >= maxScore * 0.10) { rarity = 'Uncommon'; color = '#4DFF8D'; } // Top 90%
+
+  const t = post.tags || {};
+  const generalCount = (t.general || []).length;
+  const specificCount = (t.species || []).length + (t.character || []).length + (t.artist || []).length + (t.lore || []).length;
+  const totalTags = allTagsForPost(post).size;
+
+  if (totalTags < 12 || totalTags > 90 || specificCount > generalCount) {
+    rarity = `Unusual ${rarity}`;
+    color = '#8D4DFF'; // Purple
+  }
+
+  return { label: rarity, color: color };
+}
+
+function toggleFavorite(post, btnElement) {
+  const index = favorites.findIndex(f => f.id === post.id);
+  if (index > -1) {
+    favorites.splice(index, 1);
+    if(btnElement) {
+      btnElement.classList.remove('active');
+      btnElement.textContent = '☆';
+    }
+  } else {
+    post.rarityData = calculateRarity(post);
+    favorites.push(post);
+    if(btnElement) {
+      btnElement.classList.add('active');
+      btnElement.textContent = '★';
+    }
+  }
+  localStorage.setItem('g621_favorites', JSON.stringify(favorites));
+  renderCollection();
+}
+
+function removeFromCollection(postId) {
+  favorites = favorites.filter(f => f.id !== postId);
+  localStorage.setItem('g621_favorites', JSON.stringify(favorites));
+  renderCollection();
+  
+  // Also sync state of active reel button if visible on screen
+  document.querySelectorAll('.reel').forEach(reel => {
+    const metaLink = reel.querySelector('.meta a');
+    if (metaLink && metaLink.getAttribute('href').includes(`posts/${postId}`)) {
+      const favBtn = reel.querySelector('.favorite-btn');
+      if (favBtn) {
+        favBtn.classList.remove('active');
+        favBtn.textContent = '☆';
+      }
+    }
+  });
+}
+
+function openInspect(post) {
+  const modal = document.getElementById('inspectModal');
+  const content = document.getElementById('inspectContent');
+  const tags = Array.from(allTagsForPost(post)).map(t => `<span class="tag-badge">${t}</span>`).join('');
+  
+  content.innerHTML = `
+    <h3 style="color: ${post.rarityData.color}">${post.rarityData.label} Drop</h3>
+    <img src="${bestSrc(post, mediaKind(post))}" class="full-view-img" />
+    <div style="margin-bottom: 16px;">
+      <a href="https://e621.net/posts/${post.id}" target="_blank" style="color: var(--gold-bright);">View Original on e621 ↗</a>
+      <span style="margin-left: 16px; color: var(--magenta); font-weight: bold;">Score: ${post.score.total}</span>
+    </div>
+    <div class="tag-list">${tags}</div>
+  `;
+  modal.classList.add('open');
+}
+
+function renderCollection() {
+  const grid = document.getElementById('collectionGrid');
+  if (favorites.length === 0) {
+    grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; color:var(--muted); font-family:'JetBrains Mono', monospace; padding: 30px;">Your collection is empty. Star items from the reels to save them here!</div>`;
+    return;
+  }
+  grid.innerHTML = favorites.map(post => `
+    <div class="collection-card-wrap">
+      <button class="collection-unfav-btn" onclick="event.stopPropagation(); removeFromCollection(${post.id})" title="Remove from favorites">×</button>
+      <div class="flip-card" onclick='openInspect(${JSON.stringify(post).replace(/'/g, "&#39;")})'>
+        <div class="flip-card-inner">
+          <div class="flip-card-front" style="background-image: url('${post.preview.url}'); --card-color: ${post.rarityData.color}"></div>
+          <div class="flip-card-back" style="--card-color: ${post.rarityData.color}">
+            <div class="score">▲${post.score.total}</div>
+            <div class="rarity-label">${post.rarityData.label}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('collectionBtn').addEventListener('click', () => {
+  renderCollection();
+  document.getElementById('collectionModal').classList.add('open');
+});
+
 // ===================== Animation =====================
 function animateReel(reelEl, winnerPost, fillerPosts, delayMs){
   reelEl.classList.remove('empty', 'landed');
@@ -569,7 +856,7 @@ function animateReel(reelEl, winnerPost, fillerPosts, delayMs){
       : winnerPost.preview.url;
     frames.push(src);
   }
-  frames.push(winnerPost.preview.url); // final frame = winner
+  frames.push(winnerPost.preview.url);
 
   frames.forEach((src, i) => {
     const cell = document.createElement('div');
@@ -586,16 +873,26 @@ function animateReel(reelEl, winnerPost, fillerPosts, delayMs){
   meta.className = 'meta';
   meta.innerHTML = `<a href="https://e621.net/posts/${winnerPost.id}" target="_blank" rel="noopener">#${winnerPost.id}</a><span class="score">▲${winnerPost.score.total}</span>`;
 
+  const favBtn = document.createElement('button');
+  favBtn.className = 'favorite-btn';
+  const isFav = favorites.some(f => f.id === winnerPost.id);
+  favBtn.textContent = isFav ? '★' : '☆';
+  if (isFav) favBtn.classList.add('active');
+  favBtn.onclick = (e) => {
+    e.stopPropagation();
+    toggleFavorite(winnerPost, favBtn);
+  };
+
   reelEl.appendChild(strip);
   reelEl.appendChild(glow);
   reelEl.appendChild(meta);
+  reelEl.appendChild(favBtn);
 
-  // force layout, then trigger the slide via a delayed transform change
   const cellHeight = reelEl.clientHeight;
   strip.style.transition = 'none';
   strip.style.transform = 'translateY(0)';
   // eslint-disable-next-line no-unused-expressions
-  strip.offsetHeight; // reflow
+  strip.offsetHeight;
 
   setTimeout(() => {
     strip.style.transition = '';
@@ -604,6 +901,7 @@ function animateReel(reelEl, winnerPost, fillerPosts, delayMs){
 
   setTimeout(() => {
     reelEl.classList.add('landed');
+    mountFullMedia(reelEl, winnerPost);
   }, 30 + delayMs + 1150);
 }
 
@@ -612,18 +910,25 @@ async function pull(){
   pullBtn.disabled = true;
   setStatus('Fetching the pool from e621…');
 
+  const sound = document.getElementById('spinSound');
+  sound.loop = true;
+  sound.currentTime = 0;
+  sound.play().catch(e => console.log("Audio autoplay blocked by browser until user interacts."));
+
   let rawPool, interestSentToApi;
   try {
     ({ posts: rawPool, interestSentToApi } = await fetchPool());
   } catch (err){
     setStatus(`Couldn't reach e621 (${err.message}). This can be a network/CORS block — check your connection or try again.`, true);
     pullBtn.disabled = false;
+    sound.pause();
     return;
   }
 
   if (rawPool.length === 0){
     setStatus('No posts matched your search on e621 itself. Double check tag spelling (use the suggestions dropdown) or widen the score range.', true);
     pullBtn.disabled = false;
+    sound.pause();
     return;
   }
 
@@ -636,22 +941,24 @@ async function pull(){
     let reason;
     if (lockOn && interestTags.length > 0){
       reason = interestSentToApi
-        ? 'No posts matched your "lock" tags. Double check the tag spelling (use the suggestions dropdown) — a tag has to exist exactly as e621 spells it.'
-        : `You have ${interestTags.length} lock tags, which is too many to search for directly, so results were narrowed after fetching and none matched. Try fewer lock tags or widen the score range so there's more to search through.`;
+        ? 'No posts matched your "lock" tags. Double check the tag spelling (use the suggestions dropdown).'
+        : `You have ${interestTags.length} lock tags, which is too many to search for directly.`;
     } else {
-      reason = 'Every post in this pool got caught by your blacklist. Try trimming it or widening the score range.';
+      reason = 'Every post in this pool got caught by your blacklist.';
     }
     setStatus(reason, true);
     pullBtn.disabled = false;
+    sound.pause();
     return;
   }
 
   currentPool = pool;
-  const winners = weightedSampleWithoutReplacement(pool, interestTags, REEL_COUNT, lastResultIds);
+  const winners = weightedSampleWithoutReplacement(pickEligiblePool(pool, REEL_COUNT), interestTags, REEL_COUNT);
 
   if (winners.length === 0){
     setStatus('No posts available to spin. Try widening your filters.', true);
     pullBtn.disabled = false;
+    sound.pause();
     return;
   }
 
@@ -669,7 +976,8 @@ async function pull(){
     }
   }
 
-  lastResultIds = new Set(winners.map(w => w.id));
+  spinHistory.push(new Set(winners.map(w => w.id)));
+  if (spinHistory.length > HISTORY_DEPTH) spinHistory.shift();
   spinCount += 1;
   spinCounterEl.textContent = String(spinCount).padStart(4, '0');
 
@@ -677,6 +985,9 @@ async function pull(){
   setTimeout(() => {
     setStatus(`Landed ${winners.length} of ${REEL_COUNT}. Pool had ${pool.length} eligible posts.`);
     pullBtn.disabled = false;
+    
+    sound.pause();
+    sound.currentTime = 0;
   }, totalDelay);
 }
 
@@ -738,7 +1049,6 @@ function attachTagAutocomplete(textarea, suggestBox){
     if (frag.text.length < 2){ close(); return; }
     try {
       const items = await fetchTagSuggestions(frag.text.toLowerCase().replace(/\s+/g, '_'));
-      // only render if the fragment hasn't changed while we were fetching
       if (currentFragment(textarea).text === frag.text) render(items);
     } catch (e){
       close();
