@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="NgP6UEcTPHhmZnYgSjTCpwYlePgOeWMsPVoZpCSWK1c" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gamble621 — random art slot machine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -741,7 +741,7 @@
           <textarea id="blacklistBox" placeholder="e.g. young, loli, gore&#10;comma, space, or newline separated" autocomplete="off"></textarea>
           <div class="tag-suggest" id="blacklistSuggest"></div>
         </div>
-        <div class="hint">Any post carrying these tags is excluded entirely, not just downweighted.</div>
+        <div class="hint">Any post carrying these tags is excluded entirely, not just downweighted. You can also blacklist by file format with <code>type:webm</code>, <code>type:gif</code>, <code>type:png</code>, etc.</div>
       </div>
 
       <div class="field">
@@ -984,7 +984,14 @@ function buildTagQuery(){
     interestSentToApi = true;
   }
 
-  for (const bt of blacklist){
+  // File-type filters (type:webm etc.) go first — they're valid e621 search
+  // syntax and, especially in Top Scored mode, excluding them at the source
+  // matters far more than a generic tag: filtering them out only after
+  // fetching a narrow top-N slice can starve the pool if that category
+  // dominates the top scores. Regular blacklist tags fill whatever's left.
+  const fileTypeEntries = blacklist.filter(bt => fileTypeFilterExt(bt) !== null);
+  const regularEntries = blacklist.filter(bt => fileTypeFilterExt(bt) === null);
+  for (const bt of [...fileTypeEntries, ...regularEntries]){
     if (budget <= 0) break;
     tags.push(`-${bt}`);
     budget -= 1;
@@ -1010,10 +1017,27 @@ function allTagsForPost(post){
   ]);
 }
 
+// "type:webm", "filetype:png", "ext:gif" aren't real e621 tags — they're a
+// file-format filter. e621's tag search has no reliable way to know what to
+// do with an unrecognized metatag like this, so we intercept it ourselves
+// and match against the post's actual file extension instead of its tags.
+function fileTypeFilterExt(entry){
+  const m = /^(?:type|filetype|ext):([a-z0-9]+)$/i.exec(entry);
+  return m ? m[1].toLowerCase() : null;
+}
+
 function applyBlacklistAndLock(posts, blacklist, lockTags, lockOn){
   return posts.filter(p => {
     const tagSet = allTagsForPost(p);
-    for (const bt of blacklist) if (tagSet.has(bt)) return false;
+    const postExt = ((p.file && p.file.ext) || '').toLowerCase();
+    for (const bt of blacklist){
+      const wantedExt = fileTypeFilterExt(bt);
+      if (wantedExt !== null){
+        if (postExt === wantedExt) return false;
+      } else if (tagSet.has(bt)) {
+        return false;
+      }
+    }
     if (lockOn && lockTags.length > 0){
       let hit = false;
       for (const it of lockTags) if (tagSet.has(it)) { hit = true; break; }
@@ -1072,8 +1096,9 @@ function shuffle(arr){
 // ===================== Fetch =====================
 async function fetchPool(){
   const { tagString, interestSentToApi } = buildTagQuery();
-  const url = `https://e621.net/posts.json?tags=${encodeURIComponent(tagString)}&limit=${queryLimit()}`;
-  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  const cacheBust = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const url = `https://e621.net/posts.json?tags=${encodeURIComponent(tagString)}&limit=${queryLimit()}&_=${cacheBust}`;
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
   if (!res.ok){
     throw new Error(`e621 responded with status ${res.status}`);
   }
@@ -1905,8 +1930,9 @@ attachTagAutocomplete(tgGuessInput, document.getElementById('tgGuessSuggest'));
 // ===================== Rating Roulette engine =====================
 
 async function brFetchPool(){
-  const url = `https://e621.net/posts.json?tags=${encodeURIComponent('order:random')}&limit=320`;
-  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  const cacheBust = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  const url = `https://e621.net/posts.json?tags=${encodeURIComponent('order:random')}&limit=320&_=${cacheBust}`;
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
   if (!res.ok) throw new Error(`e621 responded with status ${res.status}`);
   const data = await res.json();
   return (data.posts || []).filter(p => p.file && p.file.url && p.preview && p.preview.url && p.rating);
